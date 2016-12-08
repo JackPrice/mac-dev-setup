@@ -85,4 +85,4 @@ check_ansible
 
 info "=> Running ansible..."
 
-ansible-pull -U https://github.com/JackPrice/mac-dev-setup.git
+ansible-pull -U https://github.com/JackPrice/mac-dev-setup.git -d $(mktemp -d)
