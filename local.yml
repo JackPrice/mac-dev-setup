@@ -1,0 +1,6 @@
+#
+# This is the playbook that is run by ansible-pull.
+#
+
+- hosts: localhost:
+  roles: []
