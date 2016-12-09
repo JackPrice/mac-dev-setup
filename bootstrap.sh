@@ -195,13 +195,28 @@ debug "===> Found $(ansible --version | head -n1)" | tee -a "${LOG}"
 echo
 info "=> Downloading boxan" | tee -a "${LOG}"
 
-sudo git clone "${BOXAN_REPOSITORY}" "${BOXAN_PATH}" 2>&1 >> ${LOG}
+if [ -d "${BOXAN_PATH}" ]; then 
+    debug "===> Repository already exists, attempting to update" | tee -a "${LOG}"
 
-if [ $? -ne 0 ]; then
-    error "===> git clone failed" | tee -a "${LOG}"
-    debug "===> See log for details"
+    cd "${BOXAN_PATH}" && sudo git checkout -- . && sudo git clean -fd && sudo git pull >> ${LOG} 2>&1
 
-    exit 1
+    if [ $? -ne 0 ]; then
+        error "===> git pull failed" | tee -a "${LOG}"
+        debug "===> See log for details"
+
+        exit 1
+    fi
+else
+
+    sudo git clone "${BOXAN_REPOSITORY}" "${BOXAN_PATH}" 2>&1 >> ${LOG}
+
+    if [ $? -ne 0 ]; then
+        error "===> git clone failed" | tee -a "${LOG}"
+        debug "===> See log for details"
+
+        exit 1
+    fi
+
 fi
 
 ###############################################################################
