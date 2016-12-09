@@ -1,0 +1,107 @@
+---
+
+- hosts: localhost
+  tasks:
+
+    - name: install homebrew
+      shell: >
+        mkdir /usr/local/homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C /usr/local/homebrew
+      args:
+        creates: /usr/local/homebrew
+
+    - name: link homebrew executable
+      file:
+        src: /usr/local/bin/brew
+        dest: /usr/local/homebrew/bin/brew
+        state: link
+
+    - name: install gnu coreutils
+      become_user: "{{ boxan_user }}"
+      become: yes
+      homebrew:
+        name: coreutils
+        state: present
+
+    - name: override osx coreutils
+      lineinfile:
+        dest: "/Users/{{ boxan_user }}/.bash_profile"
+        line: 'export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH" # ansible: coreutils'
+        regexp: 'ansible: coreutils$'
+
+    - name: install gnu find
+      become_user: "{{ boxan_user }}"
+      become: yes
+      homebrew:
+        name: findutils
+        state: present
+
+    - name: install bash 4
+      become_user: "{{ boxan_user }}"
+      become: yes
+      homebrew:
+        name: bash
+        state: present
+
+    - name: add bash 4 to allowed shells
+      lineinfile:
+        dest: /etc/shells
+        line: /usr/local/bin/bash
+
+    - name: change default shell
+      user:
+        name: "{{ boxan_user }}"
+        shell: /usr/local/bin/bash
+
+    - name: tap homebrew/versions
+      become_user: "{{ boxan_user }}"
+      become: yes
+      homebrew_tap:
+        name: homebrew/versions
+
+    - name: install bash completion
+      become_user: "{{ boxan_user }}"
+      become: yes
+      homebrew:
+        name: bash-completion2
+        state: present
+
+    - name: enable bash completion
+      lineinfile:
+        dest: "/Users/{{ boxan_user }}/.bash_profile"
+        line: '. /usr/local/share/bash-completion/bash_completion # ansible: bash_completion'
+        regexp: 'ansible: bash_completion$'
+
+    - name: install utilities
+      become_user: "{{ boxan_user }}"
+      become: yes
+      homebrew:
+        name: "{{ item }}"
+        state: present
+      with_items:
+      - pv
+      - ssh-copy-id
+      - nmap
+      - wget
+
+    - name: tap homebrew cask
+      become_user: "{{ boxan_user }}"
+      become: yes
+      homebrew_tap:
+        name: caskroom/cask
+        state: present
+
+    - name: install global casks
+      become_user: "{{ boxan_user }}"
+      become: yes
+      homebrew_cask:
+        name: "{{ item }}"
+        state: present
+        install_options: 'appdir=/Applications'
+      with_items:
+      - sublime-text
+      - virtualbox
+      - vagrant
+      - docker
+      - google-chrome
+      - firefox
+      - skype

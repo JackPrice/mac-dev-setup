@@ -1,6 +1,13 @@
-#
-# This is the playbook that is run by ansible-pull.
-#
+---
 
 - hosts: localhost
-  roles: []
+  tasks:
+  - include_vars: config.yml
+
+- include: playbooks/homebrew.yml
+
+- hosts: localhost
+  tasks:
+
+    - name: notify success
+      shell: osascript -e 'display notification "Boxam run finished" with title "Boxam"'
